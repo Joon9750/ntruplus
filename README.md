@@ -1,7 +1,7 @@
 # Performance Optimization of NTRU+ KeyGen via Montgomery Batch Inversion
 
 ## Overview
-This project provides an optimized implementation aimed at maximizing the KeyGen performance of **NTRU+ (KEM 576)**, a finalist in Round 2 of the Korean Post-Quantum Cryptography Competition (KpqC).
+This project provides an optimized implementation aimed at maximizing the KeyGen performance of **NTRU+ (KEM 768, 864, 1152)**, a finalist in Round 2 of the Korean Post-Quantum Cryptography Competition (KpqC).
 
 We addressed the performance bottleneck caused by repetitive calls to the costly modular inverse operation (`fqinv`) in the existing reference implementation (Clean version) by applying the **Montgomery Batch Inversion** technique. This approach significantly enhances computational efficiency and reduces KeyGen latency.
 
