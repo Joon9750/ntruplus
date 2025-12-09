@@ -20,8 +20,8 @@ The following results were measured using the `speed_kem` benchmarking tool from
 
 | Metric | Baseline (Clean) | Optimized (Batch Inv) | Improvement |
 | :--- | :---: | :---: | :---: |
-| **Time mean (Latency)** | 42.664 μs | **28.209 μs** | **33.9% Faster** |
-| **Iterations (3sec)** | ~ 70,317 | **~ 106,349** | **51.2% Increased** |
+| **Time mean (Latency)** | 42.664 μs | 28.209 μs | **33.9% Faster** |
+| **Iterations (3sec)** | ~ 70,317 | ~ 106,349 | **51.2% Increased** |
 
 **Analysis:** We achieved approximately **34% speed improvement** compared to the baseline implementation. Furthermore, throughput per unit time increased by **more than 1.5x**, significantly reducing handshake overhead in high-performance network environments.
 
