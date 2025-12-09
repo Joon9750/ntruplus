@@ -5,6 +5,8 @@ This repository builds upon the official implementation of **NTRU+**, a key enca
 
 Original Project Website: [https://sites.google.com/view/ntruplus/](https://sites.google.com/view/ntruplus/)
 
+The **Montgomery Batch Inversion optimization** developed in this repository has been **officially accepted and merged** into the main NTRU+ repository. This codebase serves as the original implementation of that contribution.
+
 ### Base Implementation Features
 The codebase includes the standard implementations provided by the NTRU+ team:
 
