@@ -1,13 +1,35 @@
-# Performance Optimization of NTRU+ KeyGen via Montgomery Batch Inversion
+# NTRU+ (with Montgomery Batch Inversion Optimization)
 
 ## Overview
-This project provides an optimized implementation aimed at maximizing the KeyGen performance of **NTRU+ (KEM 768, 864, 1152)**, a finalist in Round 2 of the Korean Post-Quantum Cryptography Competition (KpqC).
+This repository builds upon the official implementation of **NTRU+**, a key encapsulation mechanism (**KEM**) algorithm that was selected as one of the **final algorithms** in Round 2 of the [Korean Post-Quantum Cryptography Competition (KpqC)](https://www.kpqc.or.kr).
 
-We addressed the performance bottleneck caused by repetitive calls to the costly modular inverse operation (`fqinv`) in the existing reference implementation (Clean version) by applying the **Montgomery Batch Inversion** technique. This approach significantly enhances computational efficiency and reduces KeyGen latency.
+Original Project Website: [https://sites.google.com/view/ntruplus/](https://sites.google.com/view/ntruplus/)
+
+### Base Implementation Features
+The codebase includes the standard implementations provided by the NTRU+ team:
+
+* **Reference Implementation**
+    * C-based implementation.
+    * Structured to reflect the NTRU+ specification as intuitively as possible.
+    * Focused on clarity, readability, and correctness.
+
+* **Optimized Implementation**
+    * High-performance C implementation.
+    * Fully consistent with the reference implementation.
+
+* **Additional Implementation**
+    * Architecture-specific, hand-tuned assembly implementations (Intel AVX2, ARMv8-A NEON).
+    * Fully consistent with the reference implementation.
 
 ---
 
-## Performance Benchmark
+## KeyGen Optimization via Montgomery Batch Inversion
+
+This fork introduces a specific performance enhancement targeting the **Key Generation (KeyGen)** process for NTRU+ (KEM 576, 768, 864, 1152).
+
+We addressed a significant performance bottleneck caused by repetitive calls to the costly modular inverse operation (`fqinv`) in the reference implementation. By applying the **Montgomery Batch Inversion** technique, we have significantly enhanced computational efficiency and reduced KeyGen latency.
+
+### Performance Benchmark
 
 The following results were measured using the `speed_kem` benchmarking tool from **liboqs**.
 
@@ -16,7 +38,7 @@ The following results were measured using the `speed_kem` benchmarking tool from
 * **OS:** [Your OS Version, e.g., macOS Sonoma / Ubuntu 22.04 LTS]
 * **Compiler:** [Your Compiler Version, e.g., clang 14.0.0 / gcc 11.2]
 
-### Summary
+#### Summary Table
 
 | Metric | Baseline (Clean) | Optimized (Batch Inv) | Improvement |
 | :--- | :---: | :---: | :---: |
@@ -25,7 +47,7 @@ The following results were measured using the `speed_kem` benchmarking tool from
 
 **Analysis:** We achieved approximately **34% speed improvement** compared to the baseline implementation. Furthermore, throughput per unit time increased by **more than 1.5x**, significantly reducing handshake overhead in high-performance network environments.
 
-### Evidence
+#### Evidence
 <details>
 <summary><b>View Benchmark Screenshots (Click to expand)</b></summary>
 
@@ -37,34 +59,30 @@ The following results were measured using the `speed_kem` benchmarking tool from
 
 </details>
 
----
+### Technical Details
 
-## Technical Details
+#### 1. Bottleneck Resolution
+* **Problem:** The existing `poly_baseinv` function iteratively calls the costly `fqinv` (modular inverse) operation **144 times** inside a loop for polynomial coefficient processing.
+* **Solution:** We introduced the Montgomery Batch Inversion algorithm to replace the 144 inverse operations with **a single** `fqinv` call and relatively low-cost multiplication operations.
 
-### 1. Bottleneck Resolution
-- **Problem:** The existing `poly_baseinv` function iteratively calls the costly `fqinv` (modular inverse) operation **144 times** inside a loop for polynomial coefficient processing.
-- **Solution:** We introduced the Montgomery Batch Inversion algorithm to replace the 144 inverse operations with **a single** `fqinv` call and relatively low-cost multiplication operations.
+#### 2. Implementation Details
+* **New Implementation Directory:**
+    `src/kem/ntru_plus/KpqClean_ver2_NTRU_PLUS_KEM576_clean_montgomery-batch-normalization/`
+* **Algorithm Optimization (`ntt.c`, `poly.c`):**
+    * `fq_batchinv`: Implemented batch logic to calculate inverses for multiple elements simultaneously.
+    * `baseinv_calc_t_values`, `baseinv_apply_inv`: Implemented auxiliary functions for batch processing.
+    * `poly_baseinv`: Completely rewrote the loop-based individual inverse calculation logic to utilize batch processing logic.
+* **Build System & Symbol Management:**
+    * `CMakeLists.txt`: Added the `_opt` target library and link settings.
+    * Changed function suffixes from `_clean` to `_opt` to avoid namespace collisions.
+    * Created a wrapper file (`kem_ntru_plus_kem576_opt.c`) for `liboqs` integration and registered the algorithm identifier.
 
-### 2. Implementation Details
-- **New Implementation Directory:**
-  `src/kem/ntru_plus/KpqClean_ver2_NTRU_PLUS_KEM576_clean_montgomery-batch-normalization/`
-  
-- **Algorithm Optimization (`ntt.c`, `poly.c`):**
-  - `fq_batchinv`: Implemented batch logic to calculate inverses for multiple elements simultaneously.
-  - `baseinv_calc_t_values`, `baseinv_apply_inv`: Implemented auxiliary functions for batch processing.
-  - `poly_baseinv`: Completely rewrote the loop-based individual inverse calculation logic to utilize batch processing logic.
+### Correctness Verification
 
-- **Build System & Symbol Management:**
-  - `CMakeLists.txt`: Added the `_opt` target library and link settings.
-  - Changed function suffixes from `_clean` to `_opt` to avoid namespace collisions.
-  - Created a wrapper file (`kem_ntru_plus_kem576_opt.c`) for `liboqs` integration and registered the algorithm identifier.
-
----
-
-## Correctness Verification
 This optimized implementation guarantees compatibility with the original algorithm.
-- **KAT (Known Answer Test):** Verified that it passes `PQCgenKAT_kem` and generates test vectors identical to the Reference implementation.
-- **Valgrind Test:** Confirmed no memory leaks or invalid access errors.
+
+* **KAT (Known Answer Test):** Verified that it passes `PQCgenKAT_kem` and generates test vectors identical to the Reference implementation.
+* **Valgrind Test:** Confirmed no memory leaks or invalid access errors.
 
 ---
 
@@ -73,6 +91,7 @@ This optimized implementation guarantees compatibility with the original algorit
 Follow the steps below to verify the performance improvements yourself.
 
 ### 1. Build
+
 ```bash
 # Create build directory
 mkdir build && cd build
